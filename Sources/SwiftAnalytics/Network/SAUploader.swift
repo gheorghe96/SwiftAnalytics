@@ -136,11 +136,16 @@ final class SAUploader {
         let url = configuration.serverURL.appendingPathComponent(SAConstants.HTTP.defaultEndpoint)
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
-        request.setValue(SAConstants.HTTP.contentTypeJSON, forHTTPHeaderField: "Content-Type")
         if useGzip {
+            // Send as binary with custom encoding header so the server's
+            // body-parser middleware doesn't try to JSON.parse compressed bytes
+            request.setValue("application/octet-stream", forHTTPHeaderField: "Content-Type")
             request.setValue(SAConstants.HTTP.bodyEncodingDeflate, forHTTPHeaderField: SAConstants.HTTP.bodyEncodingHeader)
+            request.httpBody = compressed
+        } else {
+            request.setValue(SAConstants.HTTP.contentTypeJSON, forHTTPHeaderField: "Content-Type")
+            request.httpBody = jsonData
         }
-        request.httpBody = useGzip ? compressed : jsonData
 
         let task = session.dataTask(with: request) { [weak self] data, response, error in
             guard let self else { return }
