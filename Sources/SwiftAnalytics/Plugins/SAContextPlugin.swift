@@ -36,6 +36,18 @@ final class SAContextPlugin: SAEventPlugin {
             }
         }
 
+        // Enrich with persisted UTM attribution
+        analytics.attributionManager.enrich(event: &enrichedEvent)
+
+        // Enrich with GPS location (if available)
+        #if canImport(CoreLocation) && os(iOS)
+        if analytics.configuration.trackingOptions.trackLatLng,
+           let locationPlugin = analytics.find(pluginType: SALocationTracker.self) {
+            enrichedEvent.locationLat = locationPlugin.latitude
+            enrichedEvent.locationLng = locationPlugin.longitude
+        }
+        #endif
+
         return enrichedEvent
     }
 }

@@ -1,4 +1,4 @@
-#if canImport(CoreLocation)
+#if canImport(CoreLocation) && os(iOS)
 import CoreLocation
 import Foundation
 

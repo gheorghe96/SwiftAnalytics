@@ -2,6 +2,9 @@ import Foundation
 #if canImport(UIKit)
 import UIKit
 #endif
+#if canImport(BackgroundTasks)
+import BackgroundTasks
+#endif
 
 /// SwiftAnalytics — Self-hosted iOS analytics SDK.
 /// Full Amplitude feature parity with zero external dependencies.
@@ -26,6 +29,14 @@ public final class SwiftAnalytics {
 
     /// Consent manager — public for direct access.
     public let consentManager: SAConsentManager
+
+    /// Attribution manager — persists UTM params across sessions.
+    let attributionManager: SAAttributionManager
+
+    /// Background task manager — for reliable background uploads.
+    #if canImport(UIKit) && canImport(BackgroundTasks)
+    public private(set) var backgroundTaskManager: SABackgroundTaskManager?
+    #endif
 
     /// Realtime client — public for subscribing to live metrics.
     public private(set) var realtimeClient: SARealtimeClient?
@@ -78,6 +89,9 @@ public final class SwiftAnalytics {
         // Initialize consent manager
         self.consentManager = SAConsentManager(persistence: persistence)
 
+        // Initialize attribution manager
+        self.attributionManager = SAAttributionManager(persistence: persistence)
+
         // Initialize plugin timeline
         self.timeline = SATimeline()
 
@@ -127,6 +141,13 @@ public final class SwiftAnalytics {
             realtimeClient = SARealtimeClient(serverURL: realtimeURL, apiKey: configuration.apiKey)
         }
 
+        // Setup background task manager
+        #if canImport(UIKit) && canImport(BackgroundTasks)
+        if configuration.flushOnBackground {
+            backgroundTaskManager = SABackgroundTaskManager(analytics: self)
+        }
+        #endif
+
         // Register for app lifecycle (session management)
         registerLifecycleObservers()
 
@@ -164,6 +185,20 @@ public final class SwiftAnalytics {
         if opts.contains(.crashes) {
             timeline.add(plugin: SACrashTracker())
         }
+
+        if opts.contains(.pushNotifications) {
+            timeline.add(plugin: SAPushNotificationTracker())
+        }
+        #endif
+
+        // StoreKit 2 auto-capture
+        timeline.add(plugin: SAStoreKit2Observer())
+
+        // Location tracking (only when host app already has permission)
+        #if canImport(CoreLocation) && os(iOS)
+        if configuration.locationTracking == .whenAuthorized {
+            timeline.add(plugin: SALocationTracker())
+        }
         #endif
     }
 
@@ -197,6 +232,9 @@ public final class SwiftAnalytics {
             self.sessionManager.handleBackground()
             if self.configuration.flushOnBackground {
                 self.uploader.flush()
+                #if canImport(BackgroundTasks)
+                self.backgroundTaskManager?.scheduleBackgroundUpload()
+                #endif
             }
         }
     }
@@ -368,7 +406,11 @@ public final class SwiftAnalytics {
     // MARK: - Deep Links (convenience for AppDelegate/SceneDelegate)
 
     /// Call from `application(_:open:options:)` to track deep links.
+    /// Also persists UTM parameters from the URL for cross-session attribution.
     public func trackDeepLink(url: URL, sourceApplication: String? = nil) {
+        // Persist UTM params for cross-session attribution
+        attributionManager.updateFromURL(url)
+
         #if canImport(UIKit)
         SADeepLinkTracker.trackDeepLink(url: url, sourceApplication: sourceApplication)
         #endif

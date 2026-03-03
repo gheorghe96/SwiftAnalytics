@@ -3,7 +3,7 @@ import StoreKit
 
 /// Auto-captures StoreKit 2 in-app purchase transactions.
 /// Listens to `Transaction.updates` and emits `$revenue` events automatically.
-@available(iOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, *)
 final class SAStoreKit2Observer: SAEventPlugin {
 
     private var updateTask: Task<Void, Never>?
@@ -55,7 +55,11 @@ final class SAStoreKit2Observer: SAEventPlugin {
         revenue.productId = transaction.productID
         revenue.price = NSDecimalNumber(decimal: transaction.price ?? 0).doubleValue
         revenue.quantity = transaction.purchasedQuantity
-        revenue.currency = transaction.currency?.identifier ?? "USD"
+        if #available(iOS 16.0, macOS 13.0, *) {
+            revenue.currency = transaction.currency?.identifier ?? "USD"
+        } else {
+            revenue.currency = transaction.currencyCode ?? "USD"
+        }
 
         switch transaction.productType {
         case .autoRenewable:
