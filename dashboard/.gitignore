@@ -1,0 +1,8 @@
+node_modules/
+functions/lib/
+web/.next/
+web/out/
+.env
+.env.local
+*.log
+.firebase/

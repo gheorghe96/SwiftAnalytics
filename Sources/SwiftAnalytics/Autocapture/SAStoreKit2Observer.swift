@@ -55,11 +55,7 @@ final class SAStoreKit2Observer: SAEventPlugin {
         revenue.productId = transaction.productID
         revenue.price = NSDecimalNumber(decimal: transaction.price ?? 0).doubleValue
         revenue.quantity = transaction.purchasedQuantity
-        if #available(iOS 16.0, macOS 13.0, *) {
-            revenue.currency = transaction.currency?.identifier ?? "USD"
-        } else {
-            revenue.currency = transaction.currencyCode ?? "USD"
-        }
+        revenue.currency = Self.extractCurrency(from: transaction)
 
         switch transaction.productType {
         case .autoRenewable:
@@ -82,5 +78,18 @@ final class SAStoreKit2Observer: SAEventPlugin {
         analytics.logRevenue(revenue)
 
         SALogger.info("StoreKit 2 transaction tracked: \(transaction.productID) — $\(revenue.revenue)")
+    }
+
+    // MARK: - Currency Extraction
+
+    private static func extractCurrency(from transaction: Transaction) -> String {
+        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+            return transaction.currency?.identifier ?? "USD"
+        }
+        #if compiler(>=5.9)
+        return transaction.currencyCode ?? "USD"
+        #else
+        return "USD"
+        #endif
     }
 }
