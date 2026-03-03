@@ -1,4 +1,4 @@
-import { getDb, API_KEY } from "../firebase";
+import { getDb } from "../firebase";
 import {
   collection,
   query,
@@ -31,13 +31,16 @@ export interface SessionRow {
 /**
  * Fetch paginated sessions.
  */
-export async function fetchSessions(options: {
-  pageSize?: number;
-  afterDoc?: DocumentSnapshot;
-  completed?: boolean;
-}): Promise<{ sessions: SessionRow[]; lastDoc: DocumentSnapshot | null }> {
+export async function fetchSessions(
+  apiKey: string,
+  options: {
+    pageSize?: number;
+    afterDoc?: DocumentSnapshot;
+    completed?: boolean;
+  }
+): Promise<{ sessions: SessionRow[]; lastDoc: DocumentSnapshot | null }> {
   const { pageSize = 25, afterDoc, completed } = options;
-  const colRef = collection(getDb(), "projects", API_KEY, "sessions");
+  const colRef = collection(getDb(), "projects", apiKey, "sessions");
 
   const constraints: any[] = [orderBy("start_time", "desc"), limit(pageSize)];
 

@@ -7,3 +7,4 @@ initializeApp();
 export { ingest } from "./ingest";
 export { dailyAggregation } from "./aggregate";
 export { dailyCleanup } from "./cleanup";
+export { createApp, claimProject, deleteApp } from "./app-management";

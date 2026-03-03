@@ -1,4 +1,4 @@
-import { getDb, API_KEY } from "../firebase";
+import { getDb } from "../firebase";
 import {
   collection,
   query,
@@ -30,14 +30,17 @@ export interface EventRow {
 /**
  * Fetch paginated events.
  */
-export async function fetchEvents(options: {
-  pageSize?: number;
-  afterDoc?: DocumentSnapshot;
-  eventType?: string;
-  userId?: string;
-}): Promise<{ events: EventRow[]; lastDoc: DocumentSnapshot | null }> {
+export async function fetchEvents(
+  apiKey: string,
+  options: {
+    pageSize?: number;
+    afterDoc?: DocumentSnapshot;
+    eventType?: string;
+    userId?: string;
+  }
+): Promise<{ events: EventRow[]; lastDoc: DocumentSnapshot | null }> {
   const { pageSize = 25, afterDoc, eventType, userId } = options;
-  const colRef = collection(getDb(), "projects", API_KEY, "events");
+  const colRef = collection(getDb(), "projects", apiKey, "events");
 
   const constraints: any[] = [orderBy("timestamp", "desc"), limit(pageSize)];
 
@@ -82,9 +85,10 @@ export async function fetchEvents(options: {
  * Subscribe to realtime events feed.
  */
 export function subscribeToRealtimeEvents(
+  apiKey: string,
   callback: (events: EventRow[]) => void
 ): Unsubscribe {
-  const docRef = doc(getDb(), "projects", API_KEY, "realtime", "latest");
+  const docRef = doc(getDb(), "projects", apiKey, "realtime", "latest");
 
   return onSnapshot(docRef, (snap) => {
     if (!snap.exists()) {

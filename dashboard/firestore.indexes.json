@@ -39,13 +39,6 @@
         { "fieldPath": "is_completed", "order": "ASCENDING" },
         { "fieldPath": "start_time", "order": "DESCENDING" }
       ]
-    },
-    {
-      "collectionGroup": "users",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "last_seen", "order": "DESCENDING" }
-      ]
     }
   ],
   "fieldOverrides": []

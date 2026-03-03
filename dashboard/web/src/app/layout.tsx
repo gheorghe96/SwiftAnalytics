@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import Sidebar from "@/components/layout/Sidebar";
+import { AuthProvider } from "@/lib/auth/AuthContext";
+import AuthGuard from "@/components/auth/AuthGuard";
+import { AppProvider } from "@/lib/app/AppContext";
+import AppShell from "@/components/layout/AppShell";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -18,8 +21,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <Sidebar />
-        <main className="ml-60 min-h-screen p-8">{children}</main>
+        <AuthProvider>
+          <AuthGuard>
+            <AppProvider>
+              <AppShell>{children}</AppShell>
+            </AppProvider>
+          </AuthGuard>
+        </AuthProvider>
       </body>
     </html>
   );

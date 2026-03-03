@@ -9,16 +9,20 @@ import { fetchDailyAggregates, DailyData } from "@/lib/queries/aggregates";
 import { fetchEvents, EventRow } from "@/lib/queries/events";
 import { formatCurrency, formatNumber } from "@/lib/utils/numbers";
 import { formatDateTime } from "@/lib/utils/dates";
+import { useCurrentApiKey } from "@/lib/hooks/useCurrentApiKey";
 
 export default function RevenuePage() {
+  const apiKey = useCurrentApiKey();
   const [dailyData, setDailyData] = useState<DailyData[]>([]);
   const [revenueEvents, setRevenueEvents] = useState<EventRow[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!apiKey) return;
+    setLoading(true);
     Promise.all([
-      fetchDailyAggregates(30),
-      fetchEvents({ eventType: "$revenue", pageSize: 50 }),
+      fetchDailyAggregates(apiKey, 30),
+      fetchEvents(apiKey, { eventType: "$revenue", pageSize: 50 }),
     ])
       .then(([aggregates, eventsResult]) => {
         setDailyData(aggregates);
@@ -26,7 +30,7 @@ export default function RevenuePage() {
       })
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, []);
+  }, [apiKey]);
 
   if (loading) {
     return (

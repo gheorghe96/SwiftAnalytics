@@ -87,11 +87,22 @@ export interface RawEvent {
 
 export interface ProjectDoc {
   name: string;
+  owner_uid: string;
   created_at: Timestamp;
   settings: {
     retention_days: number;
     rate_limit_per_minute: number;
   };
+}
+
+export interface DashboardUserDoc {
+  email: string;
+  created_at: Timestamp;
+  apps: Array<{
+    api_key: string;
+    name: string;
+    created_at: Timestamp;
+  }>;
 }
 
 export interface StoredEvent extends RawEvent {

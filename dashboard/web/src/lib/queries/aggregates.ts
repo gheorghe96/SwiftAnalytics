@@ -1,5 +1,5 @@
-import { getDb, API_KEY } from "../firebase";
-import { doc, getDoc, collection, getDocs, query, where, orderBy } from "firebase/firestore";
+import { getDb } from "../firebase";
+import { doc, getDoc, collection } from "firebase/firestore";
 import { getDateRange } from "../utils/dates";
 
 export interface DailyData {
@@ -18,11 +18,11 @@ export interface DailyData {
 /**
  * Fetch daily aggregates for the last N days.
  */
-export async function fetchDailyAggregates(days = 30): Promise<DailyData[]> {
+export async function fetchDailyAggregates(apiKey: string, days = 30): Promise<DailyData[]> {
   const dateKeys = getDateRange(days);
   const results: DailyData[] = [];
 
-  const colRef = collection(getDb(), "projects", API_KEY, "aggregates", "daily", "data");
+  const colRef = collection(getDb(), "projects", apiKey, "aggregates", "daily", "data");
 
   for (const dateKey of dateKeys) {
     const docRef = doc(colRef, dateKey);
@@ -64,11 +64,11 @@ export async function fetchDailyAggregates(days = 30): Promise<DailyData[]> {
 /**
  * Get today's summary.
  */
-export async function fetchTodaySummary(): Promise<DailyData | null> {
+export async function fetchTodaySummary(apiKey: string): Promise<DailyData | null> {
   const today = new Date();
   const dateKey = `${today.getUTCFullYear()}-${String(today.getUTCMonth() + 1).padStart(2, "0")}-${String(today.getUTCDate()).padStart(2, "0")}`;
 
-  const docRef = doc(getDb(), "projects", API_KEY, "aggregates", "daily", "data", dateKey);
+  const docRef = doc(getDb(), "projects", apiKey, "aggregates", "daily", "data", dateKey);
   const snap = await getDoc(docRef);
 
   if (!snap.exists()) return null;

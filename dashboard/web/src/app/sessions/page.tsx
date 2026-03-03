@@ -5,17 +5,21 @@ import DataTable, { Column } from "@/components/tables/DataTable";
 import { fetchSessions, SessionRow } from "@/lib/queries/sessions";
 import { formatDateTime, formatDuration } from "@/lib/utils/dates";
 import { formatNumber } from "@/lib/utils/numbers";
+import { useCurrentApiKey } from "@/lib/hooks/useCurrentApiKey";
 
 export default function SessionsPage() {
+  const apiKey = useCurrentApiKey();
   const [sessions, setSessions] = useState<SessionRow[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchSessions({ pageSize: 50 })
+    if (!apiKey) return;
+    setLoading(true);
+    fetchSessions(apiKey, { pageSize: 50 })
       .then((result) => setSessions(result.sessions))
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, []);
+  }, [apiKey]);
 
   const columns: Column<SessionRow>[] = [
     {

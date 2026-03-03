@@ -40,10 +40,13 @@ export const ingest = onRequest(
         return;
       }
 
-      const contentEncoding = req.headers["content-encoding"] as
-        | string
-        | undefined;
-      const decompressed = await decompressBody(rawBody, contentEncoding);
+      // Check custom header first (SDK sends X-Body-Encoding: deflate-raw),
+      // then fall back to standard Content-Encoding for compatibility
+      const bodyEncoding =
+        (req.headers["x-body-encoding"] as string) ||
+        (req.headers["content-encoding"] as string) ||
+        undefined;
+      const decompressed = await decompressBody(rawBody, bodyEncoding);
       const bodyStr = decompressed.toString("utf-8");
 
       // 2. Parse JSON

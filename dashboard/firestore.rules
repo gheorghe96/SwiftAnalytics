@@ -1,9 +1,21 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Admin users can read all analytics data
+    // Dashboard users can read/write their own user document
+    match /users/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // Users can only read projects they own
+    match /projects/{apiKey} {
+      allow read: if request.auth != null && resource.data.owner_uid == request.auth.uid;
+      allow write: if false; // Only Cloud Functions write
+    }
+
+    // Subcollection data inherits project ownership check
     match /projects/{apiKey}/{document=**} {
-      allow read: if request.auth != null;
+      allow read: if request.auth != null &&
+        get(/databases/$(database)/documents/projects/$(apiKey)).data.owner_uid == request.auth.uid;
       allow write: if false; // Only Cloud Functions write
     }
 

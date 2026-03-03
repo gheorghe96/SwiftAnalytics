@@ -6,8 +6,10 @@ import { fetchEvents, EventRow } from "@/lib/queries/events";
 import { formatDateTime } from "@/lib/utils/dates";
 import { getEventColor } from "@/lib/utils/constants";
 import { DocumentSnapshot } from "firebase/firestore";
+import { useCurrentApiKey } from "@/lib/hooks/useCurrentApiKey";
 
 export default function EventsPage() {
+  const apiKey = useCurrentApiKey();
   const [events, setEvents] = useState<EventRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [lastDoc, setLastDoc] = useState<DocumentSnapshot | null>(null);
@@ -16,9 +18,10 @@ export default function EventsPage() {
 
   const loadEvents = useCallback(
     async (reset = false) => {
+      if (!apiKey) return;
       setLoading(true);
       try {
-        const result = await fetchEvents({
+        const result = await fetchEvents(apiKey, {
           pageSize: 50,
           afterDoc: reset ? undefined : lastDoc ?? undefined,
           eventType: filter || undefined,
@@ -35,13 +38,13 @@ export default function EventsPage() {
         setLoading(false);
       }
     },
-    [filter, lastDoc]
+    [apiKey, filter, lastDoc]
   );
 
   useEffect(() => {
     loadEvents(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filter]);
+  }, [filter, apiKey]);
 
   const columns: Column<EventRow>[] = [
     {

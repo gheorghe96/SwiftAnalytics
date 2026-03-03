@@ -8,22 +8,26 @@ import BarChart from "@/components/charts/BarChart";
 import PieChart from "@/components/charts/PieChart";
 import { fetchDailyAggregates, DailyData } from "@/lib/queries/aggregates";
 import { formatNumber, formatCurrency, formatCompact } from "@/lib/utils/numbers";
+import { useCurrentApiKey } from "@/lib/hooks/useCurrentApiKey";
 
 export default function OverviewPage() {
+  const apiKey = useCurrentApiKey();
   const [data, setData] = useState<DailyData[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchDailyAggregates(30)
+    if (!apiKey) return;
+    setLoading(true);
+    fetchDailyAggregates(apiKey, 30)
       .then(setData)
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, []);
+  }, [apiKey]);
 
-  if (loading) {
+  if (!apiKey || loading) {
     return (
       <div className="flex items-center justify-center h-64 text-gray-400">
-        Loading analytics...
+        {!apiKey ? "No app selected" : "Loading analytics..."}
       </div>
     );
   }

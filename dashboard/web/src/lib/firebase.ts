@@ -37,6 +37,3 @@ export function getAuthInstance(): Auth {
   }
   return _auth;
 }
-
-// For backward compat — these are getters that lazily init
-export const API_KEY = process.env.NEXT_PUBLIC_SA_API_KEY || "default";

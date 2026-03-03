@@ -5,19 +5,23 @@ import { Radio } from "lucide-react";
 import { subscribeToRealtimeEvents, EventRow } from "@/lib/queries/events";
 import { formatDateTime } from "@/lib/utils/dates";
 import { getEventColor } from "@/lib/utils/constants";
+import { useCurrentApiKey } from "@/lib/hooks/useCurrentApiKey";
 
 export default function RealtimePage() {
+  const apiKey = useCurrentApiKey();
   const [events, setEvents] = useState<EventRow[]>([]);
   const [connected, setConnected] = useState(false);
 
   useEffect(() => {
-    const unsubscribe = subscribeToRealtimeEvents((newEvents) => {
+    if (!apiKey) return;
+    setConnected(false);
+    const unsubscribe = subscribeToRealtimeEvents(apiKey, (newEvents) => {
       setEvents(newEvents);
       setConnected(true);
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [apiKey]);
 
   return (
     <div>

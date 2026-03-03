@@ -138,7 +138,7 @@ final class SAUploader {
         request.httpMethod = "POST"
         request.setValue(SAConstants.HTTP.contentTypeJSON, forHTTPHeaderField: "Content-Type")
         if useGzip {
-            request.setValue(SAConstants.HTTP.contentEncodingGzip, forHTTPHeaderField: "Content-Encoding")
+            request.setValue(SAConstants.HTTP.bodyEncodingDeflate, forHTTPHeaderField: SAConstants.HTTP.bodyEncodingHeader)
         }
         request.httpBody = useGzip ? compressed : jsonData
 

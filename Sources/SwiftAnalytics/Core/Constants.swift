@@ -73,7 +73,8 @@ public enum SAConstants {
     public enum HTTP {
         public static let defaultEndpoint = "/2/httpapi"
         public static let contentTypeJSON = "application/json"
-        public static let contentEncodingGzip = "gzip"
+        public static let bodyEncodingHeader = "X-Body-Encoding"
+        public static let bodyEncodingDeflate = "deflate-raw"
     }
 
     // MARK: - Defaults

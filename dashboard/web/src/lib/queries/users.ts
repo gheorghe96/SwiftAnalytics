@@ -1,4 +1,4 @@
-import { getDb, API_KEY } from "../firebase";
+import { getDb } from "../firebase";
 import {
   collection,
   query,
@@ -29,12 +29,15 @@ export interface UserRow {
 /**
  * Fetch paginated users.
  */
-export async function fetchUsers(options: {
-  pageSize?: number;
-  afterDoc?: DocumentSnapshot;
-}): Promise<{ users: UserRow[]; lastDoc: DocumentSnapshot | null }> {
+export async function fetchUsers(
+  apiKey: string,
+  options: {
+    pageSize?: number;
+    afterDoc?: DocumentSnapshot;
+  }
+): Promise<{ users: UserRow[]; lastDoc: DocumentSnapshot | null }> {
   const { pageSize = 25, afterDoc } = options;
-  const colRef = collection(getDb(), "projects", API_KEY, "users");
+  const colRef = collection(getDb(), "projects", apiKey, "users");
 
   const constraints: any[] = [orderBy("last_seen", "desc"), limit(pageSize)];
 
@@ -71,8 +74,8 @@ export async function fetchUsers(options: {
 /**
  * Fetch a single user by ID.
  */
-export async function fetchUser(userId: string): Promise<UserRow | null> {
-  const docRef = doc(getDb(), "projects", API_KEY, "users", userId);
+export async function fetchUser(apiKey: string, userId: string): Promise<UserRow | null> {
+  const docRef = doc(getDb(), "projects", apiKey, "users", userId);
   const snap = await getDoc(docRef);
 
   if (!snap.exists()) return null;
